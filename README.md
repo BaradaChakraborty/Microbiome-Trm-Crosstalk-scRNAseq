@@ -1,23 +1,45 @@
-Microbiome-Trm-Crosstalk-scRNAseq
-Author: Barada Chakraborty
+# Microbiome Trm Crosstalk scATAC-seq
 
-Affiliation: Independent Researcher
-Project Overview
-This repository contains the computational pipeline for mapping microbiota-dependent cytotoxic Tissue-Resident Memory (Trm) cell programming using single-cell RNA sequencing and bulk transcriptomics.
+## Project Overview
+This repository contains a complete, end-to-end single-cell ATAC-seq (Assay for Transposase-Accessible Chromatin) pipeline. The primary objective is to process raw epigenetic sequencing data to identify and characterize mucosal Tissue-Resident Memory T (Trm) cells within the small intestine microenvironment.
 
-Biological Rationale
-The intestinal microbiota actively dictates the transcriptional programming required for circulating effector T cells to differentiate into protective mucosal Trm cells. This project investigates how transient depletion or alteration of the microbiota reshapes the transcriptomic trajectory of these T cells, either impairing their tissue residency markers (such as CD103 and CD69) or skewing their functional cytokine profiles. This aligns directly with contemporary research on mucosal immunity and host-microbe bidirectional crosstalk.
+The workflow translates raw DNA fragment coordinates into biologically meaningful gene activity, culminating in the physical visualization of chromatin accessibility at key tissue-residency loci. The environment is properly configured for reproducible RStudio execution, utilizing standard UTF-8 encoding and two-space tabulation.
 
-Computational Workflow
-Data Acquisition: Mining the Gene Expression Omnibus (GEO) for scRNA-seq datasets of intestinal lamina propria lymphocytes from wild-type versus germ-free or antibiotic-treated murine models.
+## Pipeline Architecture
 
-Single-Cell Processing: Utilizing Seurat for quality control, filtering, and clustering to isolate cytotoxic T cell populations.
+* **Script 01: Epigenetic Quality Control**
+    * Calculates Nucleosome Signal to assess the physical integrity of DNA wrapping.
+    * Calculates Transcriptional Start Site (TSS) Enrichment to isolate living cells with high signal-to-noise ratios.
+    * Filters out technical artifacts and dying cells.
 
-Marker Identification: Identifying Trm-specific signatures, specifically the upregulation of residency genes (Itgae, Cd69, Prdm1) and the downregulation of tissue-egress receptors (S1pr1, Sell).
+* **Script 02: Dimensionality Reduction and Clustering**
+    * Applies TF-IDF normalization to address the zero-inflated nature of scATAC-seq data.
+    * Performs Singular Value Decomposition (SVD) and Latent Semantic Indexing (LSI).
+    * Generates a 2D UMAP projection to identify distinct cellular neighborhoods.
 
-Trajectory Inference: Applying Monocle3 to map the pseudotime developmental trajectory from circulating effector cells into fully differentiated mucosal Trm cells.
+* **Script 03: Gene Activity Matrix Generation**
+    * Maps raw open chromatin peaks against the *Mus musculus* reference genome.
+    * Estimates transcriptional activity to translate epigenetic coordinates into readable gene expression profiles.
+    * Visualizes critical mucosal immunity markers (*Cd8a* and *Itgae*).
 
-Integration: Running DESeq2 on mucosal bulk RNA-seq data to calculate differential gene expression of broad immune signaling pathways (e.g., TGF-beta signaling).
+* **Script 04: Locus-Specific Coverage Visualization**
+    * Maps physical transposase cut sites directly onto the genome.
+    * Generates publication-ready coverage tracks proving chromatin unspooling at the *Itgae* (CD103) locus across distinct cellular clusters.
 
-Verified Literature Context
-This computational approach is grounded in leading mucosal immunology literature, specifically focusing on the mechanisms by which intestinal microbes undergo rapid transcriptional and metabolic adaptation to host immune activation, and how transient microbiota depletion enhances mucosal immunity.
+## Visual Results
+All generated plots proving data integrity and cellular identity are securely saved in the `results/figures/` directory. The coverage plot specifically demonstrates robust accessibility at the *Itgae* promoter, confirming the tissue-resident phenotype of the target clusters.
+
+## Dependencies & Reproducibility
+This project utilizes the `renv` package manager to guarantee strict computational reproducibility. The primary R packages required for this epigenetic analysis include:
+
+* **Signac & Seurat:** The core engines for single-cell chromatin and multimodal analysis.
+* **EnsDb.Mmusculus.v79 & ensembldb:** Bioconductor databases providing the *Mus musculus* genomic architecture and mapping coordinates.
+* **hdf5r & Rsamtools:** Essential dependencies for reading massive hierarchical binary matrices and indexing fragment files (`.tbi`).
+* **ggplot2:** Utilized for generating all high-resolution, publication-ready data visualizations.
+
+## How to Run the Pipeline
+To replicate this analysis:
+1. Clone this repository to your local machine.
+2. Open the `Microbiome-Trm-Crosstalk-scRNAseq.Rproj` file in RStudio.
+3. Run `renv::restore()` in the R console. This will automatically read the `renv.lock` file and install the exact package versions required.
+4. Execute the code in the `scripts/` directory in sequential order (01 through 04).
